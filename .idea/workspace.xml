@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e7130a20-cc78-460e-8056-87c92d0a7c32" name="Default" comment="" />
+    <list default="true" id="e7130a20-cc78-460e-8056-87c92d0a7c32" name="Default" comment="">
+      <change beforePath="" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/src/network/DHT.go" afterPath="$PROJECT_DIR$/src/network/DHT.go" />
+      <change beforePath="$PROJECT_DIR$/src/network/handle.go" afterPath="$PROJECT_DIR$/src/network/handle.go" />
+      <change beforePath="$PROJECT_DIR$/src/network/node.go" afterPath="$PROJECT_DIR$/src/network/node.go" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -11,21 +17,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="DHT.go" pinned="false" current-in-tab="true">
+      <file leaf-file-name="DHT.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/network/DHT.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="915">
-              <caret line="68" column="0" lean-forward="true" selection-start-line="68" selection-start-column="0" selection-end-line="68" selection-end-column="0" />
+            <state relative-caret-position="1020">
+              <caret line="75" column="32" lean-forward="false" selection-start-line="75" selection-start-column="32" selection-end-line="75" selection-end-column="32" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="handle.go" pinned="false" current-in-tab="false">
+      <file leaf-file-name="handle.go" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/network/handle.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2490">
-              <caret line="172" column="15" lean-forward="false" selection-start-line="172" selection-start-column="15" selection-end-line="172" selection-end-column="15" />
+            <state relative-caret-position="597">
+              <caret line="168" column="4" lean-forward="false" selection-start-line="168" selection-start-column="4" selection-end-line="168" selection-end-column="4" />
               <folding />
             </state>
           </provider>
@@ -34,11 +40,11 @@
       <file leaf-file-name="node.go" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/network/node.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="30" column="17" lean-forward="false" selection-start-line="30" selection-start-column="17" selection-end-line="30" selection-end-column="17" />
+            <state relative-caret-position="675">
+              <caret line="80" column="64" lean-forward="false" selection-start-line="80" selection-start-column="64" selection-end-line="80" selection-end-column="64" />
               <folding>
-                <element signature="e#17#47#0" expanded="true" />
-                <marker date="1511858447000" expanded="true" signature="358:400" ph="{...}" />
+                <element signature="e#17#58#0" expanded="true" />
+                <marker date="1513071135000" expanded="true" signature="369:411" ph="{...}" />
               </folding>
             </state>
           </provider>
@@ -90,6 +96,9 @@
     </findStrings>
   </component>
   <component name="GOROOT" path="/usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="GoLibraries">
     <option name="urls">
       <list>
@@ -112,10 +121,11 @@
         <option value="$PROJECT_DIR$/src/main/netaddr.go" />
         <option value="$PROJECT_DIR$/src/main/timeout.go" />
         <option value="$PROJECT_DIR$/src/main/ttt.go" />
-        <option value="$PROJECT_DIR$/src/network/node.go" />
         <option value="$PROJECT_DIR$/src/main/test.go" />
-        <option value="$PROJECT_DIR$/src/network/handle.go" />
+        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/src/network/DHT.go" />
+        <option value="$PROJECT_DIR$/src/network/node.go" />
+        <option value="$PROJECT_DIR$/src/network/handle.go" />
       </list>
     </option>
   </component>
@@ -125,11 +135,13 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="y" value="23" />
-    <option name="width" value="1440" />
-    <option name="height" value="803" />
+  <component name="ProjectFrameBounds" fullScreen="true">
+    <option name="x" value="1440" />
+    <option name="y" value="-266" />
+    <option name="width" value="1600" />
+    <option name="height" value="900" />
   </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
       <flattenPackages />
@@ -184,7 +196,7 @@
     <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="configurable.Project.GOPATH.is.expanded" value="true" />
     <property name="configurable.Module.GOPATH.is.expanded" value="false" />
-    <property name="SearchEverywhereHistoryKey" value="dh&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/DHT.go&#10;ha&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/handle.go&#10;dht&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/DHT.go&#10;h&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/handle.go&#10;node&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/node.go&#10;d&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/DHT.go&#10;pe&#9;null&#9;null&#10;han&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/handle.go&#10;tes&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/main/test.go&#10;net&#9;FILE&#9;file:///usr/local/go/src/net/net.go&#10;net.&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/main/netaddr.go" />
+    <property name="SearchEverywhereHistoryKey" value="han&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/handle.go&#10;dh&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/DHT.go&#10;node&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/node.go&#10;ha&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/handle.go&#10;dht&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/DHT.go&#10;h&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/handle.go&#10;d&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/network/DHT.go&#10;pe&#9;null&#9;null&#10;tes&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/main/test.go&#10;net&#9;FILE&#9;file:///usr/local/go/src/net/net.go&#10;net.&#9;FILE&#9;file:///Users/komgminhao/Desktop/go_study/DHT_file_share/src/main/netaddr.go" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -265,19 +277,19 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="803" extended-state="6" />
+    <frame x="1440" y="-266" width="1600" height="900" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17008986" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1318017" sideWeight="0.49427754" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39903265" sideWeight="0.50858366" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24667473" sideWeight="0.4914163" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39864865" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39864865" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -319,20 +331,13 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/main/test.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="615">
-          <caret line="41" column="16" lean-forward="false" selection-start-line="41" selection-start-column="16" selection-end-line="41" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/network/node.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
           <caret line="16" column="11" lean-forward="false" selection-start-line="16" selection-start-column="11" selection-end-line="16" selection-end-column="11" />
           <folding>
-            <element signature="e#17#47#0" expanded="true" />
-            <marker date="1511858447000" expanded="true" signature="358:400" ph="{...}" />
+            <element signature="e#17#58#0" expanded="true" />
+            <marker date="1513071135000" expanded="true" signature="369:411" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -407,8 +412,8 @@
         <state relative-caret-position="450">
           <caret line="34" column="38" lean-forward="false" selection-start-line="34" selection-start-column="38" selection-end-line="34" selection-end-column="39" />
           <folding>
-            <element signature="e#17#47#0" expanded="true" />
-            <marker date="1511858447000" expanded="true" signature="358:400" ph="{...}" />
+            <element signature="e#17#58#0" expanded="true" />
+            <marker date="1513071135000" expanded="true" signature="369:411" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -454,8 +459,8 @@
         <state relative-caret-position="690">
           <caret line="50" column="38" lean-forward="true" selection-start-line="50" selection-start-column="38" selection-end-line="50" selection-end-column="38" />
           <folding>
-            <element signature="e#17#47#0" expanded="true" />
-            <marker date="1511858447000" expanded="true" signature="358:400" ph="{...}" />
+            <element signature="e#17#58#0" expanded="true" />
+            <marker date="1513071135000" expanded="true" signature="369:411" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -500,8 +505,8 @@
         <state relative-caret-position="480">
           <caret line="36" column="18" lean-forward="true" selection-start-line="36" selection-start-column="18" selection-end-line="36" selection-end-column="18" />
           <folding>
-            <element signature="e#17#47#0" expanded="true" />
-            <marker date="1511858447000" expanded="true" signature="358:400" ph="{...}" />
+            <element signature="e#17#58#0" expanded="true" />
+            <marker date="1513071135000" expanded="true" signature="369:411" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -547,8 +552,8 @@
         <state relative-caret-position="630">
           <caret line="46" column="12" lean-forward="false" selection-start-line="46" selection-start-column="12" selection-end-line="46" selection-end-column="12" />
           <folding>
-            <element signature="e#17#47#0" expanded="true" />
-            <marker date="1511858447000" expanded="true" signature="358:400" ph="{...}" />
+            <element signature="e#17#58#0" expanded="true" />
+            <marker date="1513071135000" expanded="true" signature="369:411" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -617,14 +622,19 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/network/node.go">
+    <entry file="file://$PROJECT_DIR$/src/main/test.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="30" column="17" lean-forward="false" selection-start-line="30" selection-start-column="17" selection-end-line="30" selection-end-column="17" />
-          <folding>
-            <element signature="e#17#47#0" expanded="true" />
-            <marker date="1511858447000" expanded="true" signature="358:400" ph="{...}" />
-          </folding>
+        <state relative-caret-position="0">
+          <caret line="0" column="11" lean-forward="false" selection-start-line="0" selection-start-column="11" selection-end-line="0" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -644,26 +654,29 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/test.go">
+    <entry file="file://$PROJECT_DIR$/src/network/DHT.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="11" lean-forward="false" selection-start-line="0" selection-start-column="11" selection-end-line="0" selection-end-column="11" />
+        <state relative-caret-position="1020">
+          <caret line="75" column="32" lean-forward="false" selection-start-line="75" selection-start-column="32" selection-end-line="75" selection-end-column="32" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/network/node.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="675">
+          <caret line="80" column="64" lean-forward="false" selection-start-line="80" selection-start-column="64" selection-end-line="80" selection-end-column="64" />
+          <folding>
+            <element signature="e#17#58#0" expanded="true" />
+            <marker date="1513071135000" expanded="true" signature="369:411" ph="{...}" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/network/handle.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2490">
-          <caret line="172" column="15" lean-forward="false" selection-start-line="172" selection-start-column="15" selection-end-line="172" selection-end-column="15" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/network/DHT.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="915">
-          <caret line="68" column="0" lean-forward="true" selection-start-line="68" selection-start-column="0" selection-end-line="68" selection-end-column="0" />
+        <state relative-caret-position="597">
+          <caret line="168" column="4" lean-forward="false" selection-start-line="168" selection-start-column="4" selection-end-line="168" selection-end-column="4" />
           <folding />
         </state>
       </provider>

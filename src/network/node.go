@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 )
 
 // simple DHT network implementation
@@ -50,7 +51,9 @@ var node_route_table route_table = route_table{
 var peer_lists []peer_list = make([]peer_list, 10) // 一个节点存10条记录，emmmmm
 // 构建一个无缓冲的node信道， 便于构建路由表
 var nodech chan node = make(chan node)
-
+var infolist []info_hash
+// 构建一个无缓冲的info_hash信道，便于自动的获取info_hash
+var infoch chan info_hash = make(chan info_hash)
 func get_localip() (ip net.IP) {
 	addrs, err := net.InterfaceAddrs()
 
@@ -72,4 +75,8 @@ func get_localip() (ip net.IP) {
 
 	}
 	return
+}
+
+func (Info info_hash) String() string{
+	return strconv.Itoa(int(Info.infohash)) + "_" + Info.filename
 }

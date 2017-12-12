@@ -10,8 +10,9 @@ import (
 
 func (Node node) recvUDPMsg(conn *net.UDPConn) {
 
-	// 以协程方式启动update_route_table
+	// 以协程方式启动两个更新程序
 	go Node.update_route_table()
+	go update_infolist()
 	var buf [200]byte
 	// 循环服务
 	for {
@@ -158,6 +159,37 @@ func handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
 	// todo: 返回值，啦啦啦
 	msg = "success"
 	return msg
+}
+
+func handle_broadcastinfo(conn *net.UDPConn, buf[] byte, n int) {
+	msg := string(buf[0:n])
+	str_list := strings.Split(msg, "_")
+	raddr, err := net.ResolveUDPAddr("udp", str_list[1] )
+	checkError(err)
+	
+	defer conn.Close()
+	for _, peer := range peer_lists  {
+		infohash := peer.info
+
+	}
+
+
+}
+
+func update_infolist()  {
+	for  {
+		flag := 0
+		info_hashrecv := <- infoch
+		for _, infohash := range infolist {
+			if infohash.infohash == info_hashrecv.infohash {
+				flag = 1
+				break
+			}
+		}
+		if flag == 0 {
+			infolist = append(infolist, info_hashrecv)	
+		}
+	}	
 }
 
 // 构建一个全局的nch, 便于做路由表的更新

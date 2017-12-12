@@ -66,6 +66,14 @@ func (Node node) get_all_info() {
 	// 由需求导出的处理函数。 自动的得到局域网内的info_hash
 	// 其实只是强行使用DHT做一个路由而已
 	// 不难，明天做， 我不管那么多了，先实现需求再说。妈个鸡
+	msg := 	"broadcastinfo" + "_" + Node.ip_addr.String()
+	// 这里向两侧路由转发
+	conn_pre, err := net.DialUDP("udp",nil,&node_route_table.pre_node.ip_addr)
+	checkError(err)
+	conn_pre.Write([]byte(msg))
+	conn_after, err := net.DialUDP("udp", nil, &node_route_table.after_node.ip_addr)
+	checkError(err)
+	conn_after.Write([]byte(msg))
 
 }
 
