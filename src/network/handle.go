@@ -32,6 +32,8 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 			conn.WriteToUDP([]byte(msg), raddr)
 		} else if bytes.HasPrefix(buf[0:], []byte("getpeers")) {
 			handle_get_peer(conn, buf[0:], n)
+		} else if bytes.HasPrefix(buf[0:], []byte("broadcastinfo")) {
+			handle_broadcastinfo(conn, buf[0:], n, raddr)
 		}
 		//WriteToUDP
 		//func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (int, error)
@@ -161,18 +163,33 @@ func handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
 	return msg
 }
 
-func handle_broadcastinfo(conn *net.UDPConn, buf[] byte, n int) {
+func handle_broadcastinfo(conn *net.UDPConn, buf[] byte, n int, faddr *net.UDPAddr ) {
+	// raddr 朝相反方向转发
 	msg := string(buf[0:n])
 	str_list := strings.Split(msg, "_")
 	raddr, err := net.ResolveUDPAddr("udp", str_list[1] )
 	checkError(err)
-	
-	defer conn.Close()
+	rconn ,err := net.DialUDP("udp", nil, raddr)
+	checkError(err)
+
+	defer rconn.Close()
 	for _, peer := range peer_lists  {
 		infohash := peer.info
+		return_msg := "infohash" + "_" + infohash.String()
+		rconn.Write([]byte(return_msg))
+	}
+	if faddr.String() == node_route_table.pre_node.ip_addr.String() {
+		fconn ,err := net.DialUDP("udp", nil,&node_route_table.after_node.ip_addr)
+		checkError(err)
+		fconn.Write(buf[0:n]) //朝同一个方向转发
+	}else if faddr.String() == node_route_table.after_node.ip_addr.String() {
+		fconn, err := net.DialUDP("udp", nil, &node_route_table.pre_node.ip_addr)
+		checkError(err)
+		fconn.Write(buf[0:n])
+	}else {
+		//todo: 出错了,emmmmm, 重新ping全局路由
 
 	}
-
 
 }
 
