@@ -37,6 +37,9 @@ func (Node node) Ping_all() {
 		写入的结构
 		node的ping:id:node-ipport
 	*/
+	// 重新初始化我们的节点
+	node_route_table.pre_node = minnode
+	node_route_table.after_node = maxnode
 	ip := Node.ip_addr.IP
 	laddr := net.UDPAddr{
 		IP:   ip,
@@ -52,14 +55,29 @@ func (Node node) Ping_all() {
 	defer conn.Close()
 	msg := "ping:" + strconv.Itoa(int(Node.id)) + ":" + Node.ip_addr.IP.String() + ":" + strconv.Itoa(Node.ip_addr.Port)
 	conn.WriteToUDP([]byte(msg), &raddr)
-	// todo: ping_all超时处理
 	buf := make(chan []byte)
-	var recv []byte
+	var recv [200]byte
+	defer close(buf)
 	go func() {
-		_, _, err := conn.ReadFromUDP(recv)
+		n, _, err := conn.ReadFromUDP(recv[0:])
 		checkError(err)
-		buf <- recv
+		buf <- recv[0:n]
 	}()
+
+	for {
+		select {
+		case <-time.After(3 * time.Second):
+			// ok
+			return
+		case ch := <-buf:
+			handle_ping_resp(ch)
+			go func() {
+				n, _, err := conn.ReadFromUDP(recv[0:])
+				checkError(err)
+				buf <- recv[0:n]
+			}()
+		}
+	}
 }
 
 func (Node node) get_all_info() {
@@ -109,12 +127,11 @@ func (Node node) ping() {
 		buf <- recv[0:n]
 	}()
 
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 1; i++ {
 		select {
 		case <-time.After(3 * time.Second):
 			// todo: 超时处理, 重建路由表，删除超时项
-			//
-			Node.Ping_all() // 执行发现节点。
+			Node.Ping_all() // 执行发现节点。判断，是否是maxnode超时或者是否有一个为minnode, 因为这样肯定超时
 		case ch := <-buf:
 			handle_ping_resp(ch)
 			go func() {

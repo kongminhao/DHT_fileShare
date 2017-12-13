@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"errors"
 )
 
 func (Node node) recvUDPMsg(conn *net.UDPConn) {
@@ -33,7 +34,10 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 		} else if bytes.HasPrefix(buf[0:], []byte("getpeers")) {
 			handle_get_peer(conn, buf[0:], n)
 		} else if bytes.HasPrefix(buf[0:], []byte("broadcastinfo")) {
-			handle_broadcastinfo(conn, buf[0:], n, raddr)
+			_, err := handle_broadcastinfo(conn, buf[0:], n, raddr)
+			if err != nil {
+				go Node.Ping_all() // 以协程方式启动，防止阻塞
+			}
 		}
 		//WriteToUDP
 		//func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (int, error)
@@ -163,7 +167,7 @@ func handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
 	return msg
 }
 
-func handle_broadcastinfo(conn *net.UDPConn, buf[] byte, n int, faddr *net.UDPAddr ) {
+func handle_broadcastinfo(conn *net.UDPConn, buf[] byte, n int, faddr *net.UDPAddr )(return_msg string, error error) {
 	// raddr 朝相反方向转发
 	msg := string(buf[0:n])
 	str_list := strings.Split(msg, "_")
@@ -188,9 +192,11 @@ func handle_broadcastinfo(conn *net.UDPConn, buf[] byte, n int, faddr *net.UDPAd
 		fconn.Write(buf[0:n])
 	}else {
 		//todo: 出错了,emmmmm, 重新ping全局路由
-
+		return_msg := "fail"
+		error := errors.New("fail_to_forwardmsg")
+		return return_msg, error
 	}
-
+	return return_msg, nil
 }
 
 func update_infolist()  {
