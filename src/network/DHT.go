@@ -26,7 +26,7 @@ func (Node node) Init_rpc_server() {
 	conn, err := net.ListenUDP("udp", &ludpaddr)
 	checkError(err)
 	defer conn.Close()
-	go func() {
+	go func() { //每120s get一次局域网中的infohash
 		for {
 			Node.get_all_info()
 			time.Sleep(120 * time.Second)

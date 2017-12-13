@@ -166,7 +166,18 @@ func handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
 	msg = "success"
 	return msg
 }
-
+func handle_infohash(buf []byte, n int) {
+	msg := string(buf[0:n])
+	str_list := strings.Split(msg, "_")
+	id64, err := strconv.Atoi(str_list[1])
+	checkError(err)
+	infoid := uint64(id64)
+	info := info_hash{
+		infohash: infoid,
+		filename: str_list[2],
+	}
+	infoch <- info
+}
 func handle_broadcastinfo(conn *net.UDPConn, buf []byte, n int, faddr *net.UDPAddr) (return_msg string, error error) {
 	// raddr 朝相反方向转发
 	msg := string(buf[0:n])
