@@ -2,11 +2,11 @@ package network
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
 	"strings"
-	"errors"
 )
 
 func (Node node) recvUDPMsg(conn *net.UDPConn) {
@@ -167,30 +167,30 @@ func handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
 	return msg
 }
 
-func handle_broadcastinfo(conn *net.UDPConn, buf[] byte, n int, faddr *net.UDPAddr )(return_msg string, error error) {
+func handle_broadcastinfo(conn *net.UDPConn, buf []byte, n int, faddr *net.UDPAddr) (return_msg string, error error) {
 	// raddr 朝相反方向转发
 	msg := string(buf[0:n])
 	str_list := strings.Split(msg, "_")
-	raddr, err := net.ResolveUDPAddr("udp", str_list[1] )
+	raddr, err := net.ResolveUDPAddr("udp", str_list[1])
 	checkError(err)
-	rconn ,err := net.DialUDP("udp", nil, raddr)
+	rconn, err := net.DialUDP("udp", nil, raddr)
 	checkError(err)
 
 	defer rconn.Close()
-	for _, peer := range peer_lists  {
+	for _, peer := range peer_lists {
 		infohash := peer.info
 		return_msg := "infohash" + "_" + infohash.String()
 		rconn.Write([]byte(return_msg))
 	}
 	if faddr.String() == node_route_table.pre_node.ip_addr.String() {
-		fconn ,err := net.DialUDP("udp", nil,&node_route_table.after_node.ip_addr)
+		fconn, err := net.DialUDP("udp", nil, &node_route_table.after_node.ip_addr)
 		checkError(err)
 		fconn.Write(buf[0:n]) //朝同一个方向转发
-	}else if faddr.String() == node_route_table.after_node.ip_addr.String() {
+	} else if faddr.String() == node_route_table.after_node.ip_addr.String() {
 		fconn, err := net.DialUDP("udp", nil, &node_route_table.pre_node.ip_addr)
 		checkError(err)
 		fconn.Write(buf[0:n])
-	}else {
+	} else {
 		//todo: 出错了,emmmmm, 重新ping全局路由
 		return_msg := "fail"
 		error := errors.New("fail_to_forwardmsg")
@@ -199,10 +199,10 @@ func handle_broadcastinfo(conn *net.UDPConn, buf[] byte, n int, faddr *net.UDPAd
 	return return_msg, nil
 }
 
-func update_infolist()  {
-	for  {
+func update_infolist() {
+	for {
 		flag := 0
-		info_hashrecv := <- infoch
+		info_hashrecv := <-infoch
 		for _, infohash := range infolist {
 			if infohash.infohash == info_hashrecv.infohash {
 				flag = 1
@@ -210,9 +210,9 @@ func update_infolist()  {
 			}
 		}
 		if flag == 0 {
-			infolist = append(infolist, info_hashrecv)	
+			infolist = append(infolist, info_hashrecv)
 		}
-	}	
+	}
 }
 
 // 构建一个全局的nch, 便于做路由表的更新
