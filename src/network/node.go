@@ -33,7 +33,7 @@ type route_table struct { // 简化的DHT, 只存储前者和后者节点的信�
 }
 
 var broadcast_addr net.UDPAddr = net.UDPAddr{
-	IP:   net.IPv4(255, 255, 255, 255),
+	IP:   net.IPv4(255, 255, 255, 254),
 	Port: 8765,
 }
 var minnode node = node{
@@ -71,6 +71,7 @@ func get_localip() (ip net.IP) {
 			if ipnet.IP.To4() != nil {
 				fmt.Println(ipnet.IP.String())
 				ip = ipnet.IP
+				break
 			}
 
 		}

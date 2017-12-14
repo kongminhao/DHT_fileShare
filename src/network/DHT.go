@@ -12,6 +12,7 @@ import (
 // 初始化node
 func Init_node() node {
 	addr := net.UDPAddr{IP: get_localip(), Port: 8765}
+	rand.Seed(time.Now().UTC().UnixNano()) // 随机数
 	Node := node{uint16(rand.Uint32()), addr}
 	fmt.Println(Node)
 	//return_msg := "pingresp:" + strconv.Itoa(int(Node.id)) + ":" + Node.ip_addr.IP.String() + ":" + strconv.Itoa(Node.ip_addr.Port)
@@ -26,10 +27,11 @@ func (Node node) Init_rpc_server() {
 	conn, err := net.ListenUDP("udp", &ludpaddr)
 	checkError(err)
 	defer conn.Close()
+	go Node.Ping_all()
 	go func() { //每120s get一次局域网中的infohash
 		for {
 			Node.get_all_info()
-			time.Sleep(120 * time.Second)
+			time.Sleep(5 * time.Second)
 		}
 	}()
 	Node.recvUDPMsg(conn)
@@ -49,7 +51,7 @@ func (Node node) Ping_all() {
 	ip := Node.ip_addr.IP
 	laddr := net.UDPAddr{
 		IP:   ip,
-		Port: 6789,
+		Port: 31999,
 	}
 	// 这里设置接收者的IP地址为广播地址
 	raddr := net.UDPAddr{
@@ -66,7 +68,10 @@ func (Node node) Ping_all() {
 	defer close(buf)
 	go func() {
 		n, _, err := conn.ReadFromUDP(recv[0:])
-		checkError(err)
+		fmt.Println(123)
+		if err !=nil {
+			fmt.Println("test recv err" + err.Error())
+		}
 		buf <- recv[0:n]
 	}()
 
@@ -74,12 +79,16 @@ func (Node node) Ping_all() {
 		select {
 		case <-time.After(3 * time.Second):
 			// ok
+			fmt.Println("test time-out")
 			return
 		case ch := <-buf:
 			handle_ping_resp(ch)
 			go func() {
 				n, _, err := conn.ReadFromUDP(recv[0:])
-				checkError(err)
+				if err != nil{
+					fmt.Println("2test recv error" + err.Error())
+					return
+				}
 				buf <- recv[0:n]
 			}()
 		}

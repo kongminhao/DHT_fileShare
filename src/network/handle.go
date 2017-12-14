@@ -23,6 +23,7 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 		}
 		fmt.Println("msg is ", string(buf[0:n]))
 		fmt.Println("from", raddr)
+
 		if bytes.HasPrefix(buf[0:], []byte("ping")) {
 			msg := Node.handle_ping(conn, buf[0:], n)
 			conn.WriteToUDP([]byte(msg), raddr)
@@ -36,14 +37,17 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 		} else if bytes.HasPrefix(buf[0:], []byte("broadcastinfo")) {
 			_, err := handle_broadcastinfo(conn, buf[0:], n, raddr)
 			if err != nil {
-				go Node.Ping_all() // 以协程方式启动，防止阻塞
+				//go Node.Ping_all() // 以协程方式启动，防止阻塞
+				fmt.Println(err)
 			}
+		} else if bytes.HasPrefix(buf[0:], []byte("infohash")) {
+			handle_infohash(buf[0:], n)
 		}
 		//WriteToUDP
 		//func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (int, error)
-		n, err = conn.WriteToUDP([]byte("nice to see u"), raddr)
-		fmt.Println(n)
-		checkError(err)
+		//n, err = conn.WriteToUDP([]byte("nice to see u"), raddr)
+		//fmt.Println(n)
+		//checkError(err)
 	}
 }
 
@@ -188,16 +192,25 @@ func handle_broadcastinfo(conn *net.UDPConn, buf []byte, n int, faddr *net.UDPAd
 	checkError(err)
 
 	defer rconn.Close()
-	for _, peer := range peer_lists {
+	for i, peer := range peer_lists {
+		if i==0 {
+			continue
+		}
 		infohash := peer.info
 		return_msg := "infohash" + "_" + infohash.String()
+		if return_msg == "infohash_0_"{ // 暴力解决
+			continue
+		}
 		rconn.Write([]byte(return_msg))
 	}
-	if faddr.String() == node_route_table.pre_node.ip_addr.String() {
+	fmt.Println(faddr.String())
+	fmt.Println(node_route_table.pre_node.ip_addr.String())
+	fmt.Println(node_route_table.after_node.ip_addr.String())
+	if faddr.IP.String() == node_route_table.pre_node.ip_addr.IP.String() {
 		fconn, err := net.DialUDP("udp", nil, &node_route_table.after_node.ip_addr)
 		checkError(err)
 		fconn.Write(buf[0:n]) //朝同一个方向转发
-	} else if faddr.String() == node_route_table.after_node.ip_addr.String() {
+	} else if faddr.IP.String() == node_route_table.after_node.ip_addr.IP.String() {
 		fconn, err := net.DialUDP("udp", nil, &node_route_table.pre_node.ip_addr)
 		checkError(err)
 		fconn.Write(buf[0:n])
@@ -232,6 +245,9 @@ func (N node) update_route_table() {
 	for {
 		Node := <-nodech
 		// 更新路由表
+		if N.id == Node.id { // 防止本地环回，辣鸡
+			continue
+		}
 		if Node.id < N.id {
 			if distance(Node.id, N.id) < distance(node_route_table.pre_node.id, N.id) {
 				node_route_table.pre_node = Node
@@ -241,12 +257,14 @@ func (N node) update_route_table() {
 				node_route_table.after_node = Node
 			}
 		}
+		fmt.Println("update")
 		fmt.Println(Node)
 	}
 }
 func handle_ping_resp(buf []byte) {
 	// complete
 	msg := string(buf)
+	fmt.Println(msg)
 	var str_list []string = strings.Split(msg, ":")
 	// 构建出node
 	id64, err := strconv.Atoi(str_list[1])
