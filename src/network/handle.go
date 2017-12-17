@@ -41,7 +41,15 @@ func (Node node) handleConnection(conn net.Conn) {
 			fmt.Println(node_route_table)
 		}
 		if bytes.HasPrefix(buffer[:n],[]byte("get_info")){
-			fmt.Println(infolist)
+			data := ""
+			for _, info := range infolist{
+				if info.String() == "0_"{
+					continue
+				}
+				fmt.Println(info.String())
+				data += info.String() + "_"
+			}
+			fmt.Println(data)
 		}
 	}
 
@@ -79,7 +87,7 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 				fmt.Println(err)
 			}
 		} else if bytes.HasPrefix(buf[0:], []byte("infohash")) {
-			go handle_infohash(buf[0:], n)
+			handle_infohash(buf[0:], n)
 		} else if bytes.HasPrefix(buf[0:], []byte("peer")){
 			handlepeer(buf[0:], n)
 		}
