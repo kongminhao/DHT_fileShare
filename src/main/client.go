@@ -12,6 +12,14 @@ func sender(conn net.Conn) {
 	fmt.Println("send over")
 
 }
+func test(conn net.Conn)  {
+	buffer := make([]byte, 2048)
+	words := "get_info"
+	conn.Write([]byte(words))
+	fmt.Println("send ok")
+	conn.Read(buffer)
+	fmt.Println(buffer)
+}
 
 func main() {
 	server := "223.129.64.13:2333"
@@ -28,6 +36,6 @@ func main() {
 	}
 
 	fmt.Println("connect success")
-	sender(conn)
+	test(conn)
 
 }

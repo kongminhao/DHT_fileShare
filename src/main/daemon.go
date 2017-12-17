@@ -13,5 +13,6 @@ func main() {
 		Port: 8765,
 	}
 	node.Announce_peer(123, *test_addr, udpaddr, "test.sh")
+	node.Announce_peer(345, *test_addr, udpaddr, "kkk.sh")
 	node.Init_rpc_server()
 }

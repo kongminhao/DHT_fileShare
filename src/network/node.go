@@ -55,6 +55,7 @@ var infolist []info_hash
 
 // 构建一个无缓冲的info_hash信道，便于自动的获取info_hash
 var infoch chan info_hash = make(chan info_hash)
+var local_peer_lists []peer_list = make([]peer_list, 10)
 
 func get_localip() (ip net.IP) {
 	addrs, err := net.InterfaceAddrs()

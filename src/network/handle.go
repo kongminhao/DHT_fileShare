@@ -9,10 +9,10 @@ import (
 	"strings"
 )
 
-func (Node node) recvtcp_msg(Listenconn net.Listener)  {
-	for  {
+func (Node node) recvtcp_msg(Listenconn net.Listener) {
+	for {
 		conn, err := Listenconn.Accept()
-		if err != nil{
+		if err != nil {
 			continue
 		}
 		defer conn.Close()
@@ -21,7 +21,7 @@ func (Node node) recvtcp_msg(Listenconn net.Listener)  {
 
 }
 
-func (Node node)handleConnection(conn net.Conn) {
+func (Node node) handleConnection(conn net.Conn) {
 
 	buffer := make([]byte, 2048)
 
@@ -33,13 +33,15 @@ func (Node node)handleConnection(conn net.Conn) {
 			fmt.Println(conn.RemoteAddr().String(), " connection error: ", err)
 			return
 		}
-		if bytes.HasPrefix(buffer[:n],[]byte("get_peers")){
-			fmt.Println("GGGG")
+		if bytes.HasPrefix(buffer[:n], []byte("get_peers")) {
 			Node.Get_peers(uint64(123))
 		}
-		if bytes.HasPrefix(buffer[:n],[]byte("get_route")){
+		if bytes.HasPrefix(buffer[:n], []byte("get_route")) {
 			// 调试用
-
+			fmt.Println(node_route_table)
+		}
+		if bytes.HasPrefix(buffer[:n],[]byte("get_info")){
+			fmt.Println(infolist)
 		}
 	}
 
@@ -69,7 +71,7 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 			msg := handle_announce_peer(conn, buf[0:], n)
 			conn.WriteToUDP([]byte(msg), raddr)
 		} else if bytes.HasPrefix(buf[0:], []byte("getpeers")) {
-			handle_get_peer(conn, buf[0:], n)
+			handle_get_peer(buf[0:], n)
 		} else if bytes.HasPrefix(buf[0:], []byte("broadcastinfo")) {
 			_, err := handle_broadcastinfo(conn, buf[0:], n, raddr)
 			if err != nil {
@@ -77,7 +79,9 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 				fmt.Println(err)
 			}
 		} else if bytes.HasPrefix(buf[0:], []byte("infohash")) {
-			handle_infohash(buf[0:], n)
+			go handle_infohash(buf[0:], n)
+		} else if bytes.HasPrefix(buf[0:], []byte("peer")){
+			handlepeer(buf[0:], n)
 		}
 		//WriteToUDP
 		//func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (int, error)
@@ -111,8 +115,36 @@ func (Node node) handle_ping(conn *net.UDPConn, buf []byte, n int) string {
 func handle_find_node() {
 	// todo: 处理find_node请求
 }
+func handlepeer(buf []byte, n int) {
+	// 处理get_peer的返回值
+	//   peer_192.168.0.12:7890_
+	msg := string(buf[0:n])
+	str_list := strings.Split(msg, "_")
+	str_list = str_list[2:]
+	i64,_ := strconv.Atoi(str_list[1])
+	ui64 := uint64(i64)
+	info := info_hash{
+		infohash:ui64,
+		filename: "test.txt",
+	}
+	var temp_peerlist peer_list
+	for _,each := range local_peer_lists{
+		if each.info.infohash == info.infohash{
+			temp_peerlist = each
+		}
+	}
+	temp_peerlist.info = info
+	for _, straddr := range str_list{
+		tcpaddr , err := net.ResolveTCPAddr("tcp", straddr)
+		checkError(err)
+		peer := peer{
+			ip: (*tcpaddr),
+		}
+		temp_peerlist.peer_lists = append(temp_peerlist.peer_lists, peer)
+	}
+}
 
-func handle_get_peer(conn *net.UDPConn, buf []byte, n int) string {
+func handle_get_peer(buf []byte, n int) string {
 	// todo: 处理get peers 请求
 	// 判断是否在自己的peer_list中， 如在，返回对应的peer_list
 	// 否则，向下级路由转发， 同时，将路由的跳数-1
@@ -127,18 +159,21 @@ func handle_get_peer(conn *net.UDPConn, buf []byte, n int) string {
 	for _, peerlist := range peer_lists {
 		if peerlist.info.infohash == infohash {
 			flag = 1
-			// todo: return peer_list
-			return_msg := "peer_list:"
+			return_msg := "peer_" + str_list[1] + "_"
 			for _, peer := range peerlist.peer_lists {
 				return_msg += peer.ip.String()
-				return_msg += ":"
+				return_msg += "_"
 				fmt.Println(peer.ip.String())
 			}
 			// todo: check info stream
-			remote := str_list[3] +":" +  str_list[4]
+			remote := str_list[3] + ":" + str_list[4]
 			raddr, err := net.ResolveUDPAddr("udp", remote)
+
 			checkError(err)
-			n, err := conn.WriteToUDP([]byte(return_msg), raddr)
+			conn, err := net.DialUDP("udp", nil, raddr)
+			checkError(err)
+			defer conn.Close()
+			n, err := conn.Write([]byte(return_msg))
 			checkError(err)
 			fmt.Println(n)
 		}
@@ -153,12 +188,14 @@ func handle_get_peer(conn *net.UDPConn, buf []byte, n int) string {
 			// 转发给pre_node
 			forward_conn, err := net.DialUDP("udp", nil, &node_route_table.pre_node.ip_addr)
 			checkError(err)
+			defer forward_conn.Close()
 			forward_conn.Write([]byte(forward_msg))
 
 		} else {
 			// 转发给after_node
 			forward_conn, err := net.DialUDP("udp", nil, &node_route_table.after_node.ip_addr)
 			checkError(err)
+			defer forward_conn.Close()
 			forward_conn.Write([]byte(forward_msg))
 		}
 	}
@@ -230,12 +267,12 @@ func handle_broadcastinfo(conn *net.UDPConn, buf []byte, n int, faddr *net.UDPAd
 
 	defer rconn.Close()
 	for i, peer := range peer_lists {
-		if i==0 {
+		if i == 0 {
 			continue
 		}
 		infohash := peer.info
 		return_msg := "infohash" + "_" + infohash.String()
-		if return_msg == "infohash_0_"{ // 暴力解决
+		if return_msg == "infohash_0_" { // 暴力解决
 			continue
 		}
 		rconn.Write([]byte(return_msg))

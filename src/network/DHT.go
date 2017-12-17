@@ -24,7 +24,7 @@ func (Node node) Init_rpc_server() {
 		IP:   net.IPv4(0, 0, 0, 0),
 		Port: 8765,
 	}
-	Listenconn ,err := net.Listen("tcp4", "0.0.0.0:2333")
+	Listenconn, err := net.Listen("tcp4", "0.0.0.0:2333")
 
 	checkError(err)
 	defer Listenconn.Close()
@@ -37,7 +37,7 @@ func (Node node) Init_rpc_server() {
 	go func() { //每120s get一次局域网中的infohash
 		for {
 			Node.get_all_info()
-			time.Sleep(120 * time.Second)
+			time.Sleep(5 * time.Second)
 		}
 	}()
 
@@ -75,7 +75,7 @@ func (Node node) Ping_all() {
 	go func() {
 		n, _, err := conn.ReadFromUDP(recv[0:])
 		fmt.Println(123)
-		if err !=nil {
+		if err != nil {
 			fmt.Println("test recv err" + err.Error())
 		}
 		buf <- recv[0:n]
@@ -91,7 +91,7 @@ func (Node node) Ping_all() {
 			handle_ping_resp(ch)
 			go func() {
 				n, _, err := conn.ReadFromUDP(recv[0:])
-				if err != nil{
+				if err != nil {
 					fmt.Println("2test recv error" + err.Error())
 					return
 				}
@@ -212,12 +212,9 @@ func (Node node) Get_peers(info_hash uint64) {
 }
 func (Node node) Announce_peer(info_hash uint64, tcpaddr net.TCPAddr, target_addr net.UDPAddr, filename string) {
 	// 完成
-	laddr := net.UDPAddr{
-		IP:   Node.ip_addr.IP,
-		Port: 32223,
-	}
 	msg := "announcepeer:" + strconv.Itoa(int(info_hash)) + ":" + strconv.Itoa(int(Node.id)) + ":" + tcpaddr.IP.String() + ":" + strconv.Itoa(tcpaddr.Port) + ":" + filename
-	conn, err := net.DialUDP("udp", &laddr, &target_addr)
+	conn, err := net.DialUDP("udp", nil, &target_addr)
+	defer conn.Close()
 	checkError(err)
 	_, err = conn.Write([]byte(msg))
 	checkError(err)
@@ -231,6 +228,9 @@ func checkError(err error) {
 
 func distance(id1 uint16, id2 uint16) uint16 {
 	// 简单的距离计算，异或
-	return id1 ^ id2
+	if id1 > id2{
+		return id1 - id2
+	}
+	return id2 - id1
 	//return id1 - id2
 }
