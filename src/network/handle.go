@@ -9,6 +9,42 @@ import (
 	"strings"
 )
 
+func (Node node) recvtcp_msg(Listenconn net.Listener)  {
+	for  {
+		conn, err := Listenconn.Accept()
+		if err != nil{
+			continue
+		}
+		defer conn.Close()
+		go Node.handleConnection(conn)
+	}
+
+}
+
+func (Node node)handleConnection(conn net.Conn) {
+
+	buffer := make([]byte, 2048)
+
+	for {
+
+		n, err := conn.Read(buffer)
+
+		if err != nil {
+			fmt.Println(conn.RemoteAddr().String(), " connection error: ", err)
+			return
+		}
+		if bytes.HasPrefix(buffer[:n],[]byte("get_peers")){
+			fmt.Println("GGGG")
+			Node.Get_peers(uint64(123))
+		}
+		if bytes.HasPrefix(buffer[:n],[]byte("get_route")){
+			// 调试用
+
+		}
+	}
+
+}
+
 func (Node node) recvUDPMsg(conn *net.UDPConn) {
 
 	// 以协程方式启动两个更新程序
@@ -92,18 +128,19 @@ func handle_get_peer(conn *net.UDPConn, buf []byte, n int) string {
 		if peerlist.info.infohash == infohash {
 			flag = 1
 			// todo: return peer_list
-			return_msg := "peer_list"
+			return_msg := "peer_list:"
 			for _, peer := range peerlist.peer_lists {
 				return_msg += peer.ip.String()
 				return_msg += ":"
 				fmt.Println(peer.ip.String())
 			}
 			// todo: check info stream
-			remote := str_list[3] + str_list[4]
+			remote := str_list[3] +":" +  str_list[4]
 			raddr, err := net.ResolveUDPAddr("udp", remote)
-			conn.WriteToUDP([]byte(return_msg), raddr)
-
 			checkError(err)
+			n, err := conn.WriteToUDP([]byte(return_msg), raddr)
+			checkError(err)
+			fmt.Println(n)
 		}
 	}
 	if flag == 0 {

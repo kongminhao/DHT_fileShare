@@ -24,18 +24,24 @@ func (Node node) Init_rpc_server() {
 		IP:   net.IPv4(0, 0, 0, 0),
 		Port: 8765,
 	}
+	Listenconn ,err := net.Listen("tcp4", "0.0.0.0:2333")
+
+	checkError(err)
+	defer Listenconn.Close()
+	go Node.recvtcp_msg(Listenconn)
 	conn, err := net.ListenUDP("udp", &ludpaddr)
 	checkError(err)
+
 	defer conn.Close()
 	go Node.Ping_all()
 	go func() { //每120s get一次局域网中的infohash
 		for {
 			Node.get_all_info()
-			time.Sleep(5 * time.Second)
+			time.Sleep(120 * time.Second)
 		}
 	}()
-	Node.recvUDPMsg(conn)
 
+	Node.recvUDPMsg(conn)
 }
 
 func (Node node) Ping_all() {
@@ -180,13 +186,14 @@ func (Node node) Find_node(id uint16) {
 func (Node node) Get_peers(info_hash uint64) {
 	// todo: 获取正在下载文件的节点list
 	var raddr net.UDPAddr
-	msg := "getpeers:" + string(info_hash) + ":" + string(Node.id) + ":" + string(Node.ip_addr.IP) + ":" + string(Node.ip_addr.Port) + ":" + string(255)
+	msg := "getpeers:" + strconv.Itoa(int(info_hash)) + ":" + strconv.Itoa(int(Node.id)) + ":" + Node.ip_addr.String() + ":" + strconv.Itoa(255)
 	laddr := net.UDPAddr{
 		IP:   Node.ip_addr.IP,
 		Port: 32222,
 	}
 	// 计算info_hash映射到的节点.
 	target_id := uint16(info_hash % 0xffff)
+	fmt.Println(target_id)
 	// 寻找与info_hash 映射节点更近的节点
 	if distance(target_id, node_route_table.pre_node.id) > distance(target_id, Node.id) && distance(target_id, node_route_table.after_node.id) > distance(target_id, Node.id) {
 		raddr = Node.ip_addr
@@ -195,7 +202,9 @@ func (Node node) Get_peers(info_hash uint64) {
 	} else {
 		raddr = node_route_table.pre_node.ip_addr
 	}
+	fmt.Println(raddr.String())
 	conn, err := net.ListenUDP("udp", &laddr)
+	defer conn.Close()
 	checkError(err)
 
 	_, err = conn.WriteToUDP([]byte(msg), &raddr)
@@ -223,4 +232,5 @@ func checkError(err error) {
 func distance(id1 uint16, id2 uint16) uint16 {
 	// 简单的距离计算，异或
 	return id1 ^ id2
+	//return id1 - id2
 }

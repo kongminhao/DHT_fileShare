@@ -7,14 +7,14 @@ import (
 )
 
 func sender(conn net.Conn) {
-	words := "hello world!"
+	words := "get_peers123!"
 	conn.Write([]byte(words))
 	fmt.Println("send over")
 
 }
 
 func main() {
-	server := "127.0.0.1:1024"
+	server := "223.129.64.13:2333"
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", server)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
