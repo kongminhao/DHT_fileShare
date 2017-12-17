@@ -64,3 +64,6 @@ Session.vim
 # Auto-generated tag files
 tags
 
+src/main/netaddr
+src/main/daemon
+pkg/*
