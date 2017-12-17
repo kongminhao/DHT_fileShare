@@ -7,6 +7,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"io/ioutil"
 )
 
 func (Node node) recvtcp_msg(Listenconn net.Listener) {
@@ -34,7 +35,10 @@ func (Node node) handleConnection(conn net.Conn) {
 			return
 		}
 		if bytes.HasPrefix(buffer[:n], []byte("get_peers")) {
-			Node.Get_peers(uint64(123))
+			infohash := bytes.Split(buffer[:n], []byte(" "))[1]
+			i64,err := strconv.Atoi(string(infohash))
+			checkError(err)
+			Node.Get_peers(uint64(i64))
 		}
 		if bytes.HasPrefix(buffer[:n], []byte("get_route")) {
 			// 调试用
@@ -50,6 +54,14 @@ func (Node node) handleConnection(conn net.Conn) {
 				data += info.String() + "_"
 			}
 			fmt.Println(data)
+			conn.Write([]byte(data))
+		}
+		if bytes.HasPrefix(buffer[:n], []byte("openTcp")){// openTcp filepath
+			msg := string(buffer[:n])
+			filepath := strings.Split(msg, " ")[1]
+			string := openTcpPort(filepath)
+			fmt.Println(string)
+			// todo Announce peers
 		}
 	}
 
@@ -360,4 +372,37 @@ func handle_ping_resp(buf []byte) {
 		ip_addr: *node_addr,
 	}
 	nodech <- Node
+}
+
+func openTcpPort(path string) string{
+
+	laddr := net.TCPAddr{
+		IP: get_localip(),
+		Port:0, // to random port
+	}
+	Listen_conn, err := net.ListenTCP("tcp", &laddr)
+	if err != nil{
+		panic(err)
+	}
+	defer Listen_conn.Close()
+	// open file to transport
+	go openFileDownload(*Listen_conn, path)
+	return Listen_conn.Addr().String()
+}
+func openFileDownload(listener net.TCPListener, path string)  {
+	for   {
+		conn, err := listener.AcceptTCP()
+		if err != nil{
+			continue
+		}
+		defer conn.Close()
+		go func() {
+			b , err := ioutil.ReadFile(path)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			conn.Write(b)
+		}()
+	}
 }

@@ -11,10 +11,7 @@ func say(s string) {
 	}
 }
 
-var test chan string = make(chan  string)
 func main() {
-	test <- "1213"
-	test <- "sdasda"
 	go say("world")
 	say("hello")
 }
