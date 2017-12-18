@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"strconv"
 	"strings"
-	"io/ioutil"
 )
 
 func (Node node) recvtcp_msg(Listenconn net.Listener) {
@@ -36,27 +36,43 @@ func (Node node) handleConnection(conn net.Conn) {
 		}
 		if bytes.HasPrefix(buffer[:n], []byte("get_peers")) {
 			infohash := bytes.Split(buffer[:n], []byte(" "))[1]
-			i64,err := strconv.Atoi(string(infohash))
+			i64, err := strconv.Atoi(string(infohash))
 			checkError(err)
-			Node.Get_peers(uint64(i64))
+			var temp_peer_list peer_list
+			fmt.Println(local_peer_lists)
+			for _, peer_list := range local_peer_lists {
+				if peer_list.info.infohash == uint64(i64) {
+					temp_peer_list = peer_list
+					break
+				}
+			}
+			data := ""
+			for _, peer := range temp_peer_list.peer_lists {
+				if peer.ip.Port == 0{
+					continue
+				}
+				data += peer.ip.String() + "_"
+			}
+			conn.Write([]byte(data))
 		}
 		if bytes.HasPrefix(buffer[:n], []byte("get_route")) {
 			// 调试用
 			fmt.Println(node_route_table)
 		}
-		if bytes.HasPrefix(buffer[:n],[]byte("get_info")){
+		if bytes.HasPrefix(buffer[:n], []byte("get_info")) {
 			data := ""
-			for _, info := range infolist{
-				if info.String() == "0_"{
+			for _, info := range infolist {
+				if info.infohash == 0 {
 					continue
 				}
+				Node.Get_peers(info.infohash)
 				fmt.Println(info.String())
 				data += info.String() + "_"
 			}
 			fmt.Println(data)
 			conn.Write([]byte(data))
 		}
-		if bytes.HasPrefix(buffer[:n], []byte("openTcp")){// openTcp filepath
+		if bytes.HasPrefix(buffer[:n], []byte("openTcp")) { // openTcp filepath
 			msg := string(buffer[:n])
 			filepath := strings.Split(msg, " ")[1]
 			string := openTcpPort(filepath)
@@ -100,7 +116,7 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 			}
 		} else if bytes.HasPrefix(buf[0:], []byte("infohash")) {
 			handle_infohash(buf[0:], n)
-		} else if bytes.HasPrefix(buf[0:], []byte("peer")){
+		} else if bytes.HasPrefix(buf[0:], []byte("peer")) {
 			handlepeer(buf[0:], n)
 		}
 		//WriteToUDP
@@ -140,28 +156,32 @@ func handlepeer(buf []byte, n int) {
 	//   peer_192.168.0.12:7890_
 	msg := string(buf[0:n])
 	str_list := strings.Split(msg, "_")
+	i64, err := strconv.Atoi(str_list[1])
+	checkError(err)
 	str_list = str_list[2:]
-	i64,_ := strconv.Atoi(str_list[1])
 	ui64 := uint64(i64)
+	fmt.Println(i64, ui64)
 	info := info_hash{
-		infohash:ui64,
+		infohash: ui64,
 		filename: "test.txt",
 	}
 	var temp_peerlist peer_list
-	for _,each := range local_peer_lists{
-		if each.info.infohash == info.infohash{
+	fmt.Println(local_peer_lists)
+	for _, each := range local_peer_lists {
+		if each.info.infohash == info.infohash {
 			temp_peerlist = each
 		}
 	}
 	temp_peerlist.info = info
-	for _, straddr := range str_list{
-		tcpaddr , err := net.ResolveTCPAddr("tcp", straddr)
+	for _, straddr := range str_list {
+		tcpaddr, err := net.ResolveTCPAddr("tcp", straddr)
 		checkError(err)
 		peer := peer{
 			ip: (*tcpaddr),
 		}
 		temp_peerlist.peer_lists = append(temp_peerlist.peer_lists, peer)
 	}
+	local_peer_lists = append(local_peer_lists, temp_peerlist)
 }
 
 func handle_get_peer(buf []byte, n int) string {
@@ -374,14 +394,14 @@ func handle_ping_resp(buf []byte) {
 	nodech <- Node
 }
 
-func openTcpPort(path string) string{
+func openTcpPort(path string) string {
 
 	laddr := net.TCPAddr{
-		IP: get_localip(),
-		Port:0, // to random port
+		IP:   get_localip(),
+		Port: 0, // to random port
 	}
 	Listen_conn, err := net.ListenTCP("tcp", &laddr)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	defer Listen_conn.Close()
@@ -389,20 +409,21 @@ func openTcpPort(path string) string{
 	go openFileDownload(*Listen_conn, path)
 	return Listen_conn.Addr().String()
 }
-func openFileDownload(listener net.TCPListener, path string)  {
-	for   {
+func openFileDownload(listener net.TCPListener, path string) {
+	for {
 		conn, err := listener.AcceptTCP()
-		if err != nil{
+		if err != nil {
 			continue
 		}
 		defer conn.Close()
 		go func() {
-			b , err := ioutil.ReadFile(path)
+			b, err := ioutil.ReadFile(path)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 			conn.Write(b)
+			conn.Close()
 		}()
 	}
 }

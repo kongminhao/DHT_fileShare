@@ -189,7 +189,7 @@ func (Node node) Get_peers(info_hash uint64) {
 	msg := "getpeers:" + strconv.Itoa(int(info_hash)) + ":" + strconv.Itoa(int(Node.id)) + ":" + Node.ip_addr.String() + ":" + strconv.Itoa(255)
 	laddr := net.UDPAddr{
 		IP:   Node.ip_addr.IP,
-		Port: 32222,
+		Port: 0, // random port
 	}
 	// 计算info_hash映射到的节点.
 	target_id := uint16(info_hash % 0xffff)
@@ -228,7 +228,7 @@ func checkError(err error) {
 
 func distance(id1 uint16, id2 uint16) uint16 {
 	// 简单的距离计算，异或
-	if id1 > id2{
+	if id1 > id2 {
 		return id1 - id2
 	}
 	return id2 - id1

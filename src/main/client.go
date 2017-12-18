@@ -1,37 +1,42 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"os"
 	"strings"
-	"bufio"
+
 )
 
 func sender(conn net.Conn, infohash string) {
+	buffer := make([]byte, 2048)
 	words := "get_peers "
 	words += infohash
 	conn.Write([]byte(words))
 	fmt.Println("send over")
-
+	n, _ := conn.Read(buffer)
+	fmt.Println(string(buffer[:n]))
+	str_list := strings.Split(string(buffer[:n]), "_")
+	fmt.Println(str_list)
 }
-func showinfo(conn net.Conn)  {
+func showinfo(conn net.Conn) {
 	buffer := make([]byte, 2048)
 	words := "get_info"
 	conn.Write([]byte(words))
 	fmt.Println("send ok")
 	n, err := conn.Read(buffer)
-	if err !=nil {
+	if err != nil {
 		fmt.Println(err)
 	}
 	str := string(buffer[0:n])
 	str_list := strings.Split(str, "_")
 	// 123_test.sh_345_kkkk.sh_
-	for i :=0 ; i< len(str_list) -1; i+=2{
+	for i := 0; i < len(str_list)-1; i += 2 {
 		fmt.Printf("INFO:%s filename: %s \n", str_list[i], str_list[i+1])
 	}
 }
-func upload(conn net.Conn, path string)  {
+func upload(conn net.Conn, path string) {
 	word := "openTcp " + path
 	conn.Write([]byte(word))
 	fmt.Println("test")
@@ -53,27 +58,30 @@ func main() {
 	fmt.Println("connect success")
 	fmt.Println("please enter your choice, /q to quit, /help to show help info")
 	reader := bufio.NewReader(os.Stdin)
-	for   {
+	for {
 		fmt.Print(">>>")
 		choice := ""
 		strBytes, _, err := reader.ReadLine()
 		choice = string(strBytes)
-		if err != nil{
+		if err != nil {
 			fmt.Println(err)
 			break
 		}
-		if strings.HasPrefix(choice, "/q"){
+		if strings.HasPrefix(choice, "/q") {
 			break
-		}else if strings.HasPrefix(choice,"/help") {
+		} else if strings.HasPrefix(choice, "/help") {
 			fmt.Println("/q to quit this program")
 			fmt.Println("/help to show this info")
-		}else if strings.HasPrefix(choice, "/showinfo") {
+			fmt.Println("/showinfo to show this machine has recved infohash")
+			fmt.Println("/download infohash filename to download this infohash's file to file")
+			fmt.Println("/upload filename : upload a file to DHT network")
+		} else if strings.HasPrefix(choice, "/showinfo") {
 			showinfo(conn)
-		}else if strings.HasPrefix(choice, "/download"){
+		} else if strings.HasPrefix(choice, "/download") {
 			fmt.Println(choice)
 			infohash := strings.Split(choice, " ")[1]
 			sender(conn, infohash)
-		}else if strings.HasPrefix(choice, "/upload"){
+		} else if strings.HasPrefix(choice, "/upload") {
 			path := strings.Split(choice, " ")[1]
 			upload(conn, path)
 		}
