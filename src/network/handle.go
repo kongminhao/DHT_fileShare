@@ -104,7 +104,7 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 		} else if bytes.HasPrefix(buf[0:], []byte("findnode")) {
 			handle_find_node()
 		} else if bytes.HasPrefix(buf[0:], []byte("announcepeer")) {
-			msg := handle_announce_peer(conn, buf[0:], n)
+			msg := Node.handle_announce_peer(conn, buf[0:], n)
 			conn.WriteToUDP([]byte(msg), raddr)
 		} else if bytes.HasPrefix(buf[0:], []byte("getpeers")) {
 			handle_get_peer(buf[0:], n)
@@ -242,7 +242,7 @@ func handle_get_peer(buf []byte, n int) string {
 	return "success"
 }
 
-func handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
+func (Node node) handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
 	// todo: 处理announce peer请求， 向下级路由转发也要做，妈个鸡，好烦啊, 判断是否有节点比自己离info_hash近，没有的话， 再加入节点。
 	msg := string((buf[0:n]))
 	var str_list []string = strings.Split(msg, ":")
@@ -250,6 +250,7 @@ func handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
 	s64, err := strconv.Atoi(str_list[1])
 	checkError(err)
 	s := uint64(s64)
+	infohash := s
 	info := info_hash{
 		infohash: s,
 		filename: str_list[5],
@@ -260,28 +261,41 @@ func handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
 	PEER := peer{
 		ip: *tcpaddr,
 	}
-	// 如果该peer有对应的info_hash, 则将其加入peer_list
-	flag := 0
-	for _, peerlist := range peer_lists {
-		if peerlist.info.infohash == info.infohash {
-			if len(peerlist.peer_lists) < 5 { // 确保peer_list大小小于5
-				flag = 1
-				peerlist.peer_lists = append(peerlist.peer_lists, PEER) // append 采用副作用编程
+
+	nodeid := uint16(infohash % 0xffff) // 计算映射节点
+
+	if distance(nodeid, Node.id) > distance(nodeid, node_route_table.pre_node.id) && node_route_table.pre_node.ip_addr.String() != broadcast_addr.String(){
+		forwardconn, err := net.DialUDP("udp", nil,&node_route_table.pre_node.ip_addr)
+		checkError(err)
+		forwardconn.Write([]byte(msg))
+	}else if distance(nodeid, Node.id) > distance(nodeid,node_route_table.after_node.id) && node_route_table.after_node.ip_addr.String() != broadcast_addr.String() {
+		forwardconn, err := net.DialUDP("udp", nil,&node_route_table.after_node.ip_addr)
+		checkError(err)
+		forwardconn.Write([]byte(msg))
+	}else {
+		// 如果该peer有对应的info_hash, 则将其加入peer_list
+		flag := 0
+		for _, peerlist := range peer_lists {
+			if peerlist.info.infohash == info.infohash {
+				if len(peerlist.peer_lists) < 5 { // 确保peer_list大小小于5
+					flag = 1
+					peerlist.peer_lists = append(peerlist.peer_lists, PEER) // append 采用副作用编程
+				}
 			}
 		}
-	}
-	// init empty peer , 如果没有对应的info_hash
-	if flag == 0 {
-		var p []peer = []peer{}
-		p = append(p, PEER)
-		newpeerlist := peer_list{
-			info:       info,
-			peer_lists: p,
+		// init empty peer , 如果没有对应的info_hash
+		if flag == 0 {
+			var p []peer = []peer{}
+			p = append(p, PEER)
+			newpeerlist := peer_list{
+				info:       info,
+				peer_lists: p,
+			}
+			peer_lists = append(peer_lists, newpeerlist)
 		}
-		peer_lists = append(peer_lists, newpeerlist)
+		// todo: 返回值，啦啦啦
+		msg = "success"
 	}
-	// todo: 返回值，啦啦啦
-	msg = "success"
 	return msg
 }
 func handle_infohash(buf []byte, n int) {

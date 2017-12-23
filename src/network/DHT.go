@@ -210,14 +210,29 @@ func (Node node) Get_peers(info_hash uint64) {
 	_, err = conn.WriteToUDP([]byte(msg), &raddr)
 	checkError(err)
 }
-func (Node node) Announce_peer(info_hash uint64, tcpaddr net.TCPAddr, target_addr net.UDPAddr, filename string) {
+func (Node node) Announce_peer(info_hash uint64, tcpaddr net.TCPAddr ,filename string) {
 	// 完成
 	msg := "announcepeer:" + strconv.Itoa(int(info_hash)) + ":" + strconv.Itoa(int(Node.id)) + ":" + tcpaddr.IP.String() + ":" + strconv.Itoa(tcpaddr.Port) + ":" + filename
-	conn, err := net.DialUDP("udp", nil, &target_addr)
-	defer conn.Close()
-	checkError(err)
-	_, err = conn.Write([]byte(msg))
-	checkError(err)
+	nodeid := uint16(info_hash % 0xffff)
+	if distance(nodeid, Node.id) > distance(nodeid, node_route_table.pre_node.id) && node_route_table.pre_node.ip_addr.String() != broadcast_addr.String(){
+		conn, err := net.DialUDP("udp",nil, &node_route_table.pre_node.ip_addr)
+		checkError(err)
+		defer conn.Close()
+		_, err = conn.Write([]byte(msg))
+		checkError(err)
+	}else if distance(nodeid, Node.id) > distance(nodeid, node_route_table.after_node.id) && node_route_table.after_node.ip_addr.String() != broadcast_addr.String(){
+		conn, err := net.DialUDP("udp",nil, &node_route_table.after_node.ip_addr)
+		checkError(err)
+		defer conn.Close()
+		_, err = conn.Write([]byte(msg))
+		checkError(err)
+	}else {
+		conn, err := net.DialUDP("udp", nil, &Node.ip_addr)
+		defer conn.Close()
+		checkError(err)
+		_, err = conn.Write([]byte(msg))
+		checkError(err)
+	}
 }
 func checkError(err error) {
 	if err != nil {
