@@ -113,7 +113,7 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 			return
 		}
 		fmt.Println("msg is ", string(buf[0:n]))
-		fmt.Println("from", raddr)
+		//fmt.Println("from", raddr)
 
 		if bytes.HasPrefix(buf[0:], []byte("ping")) {
 			msg := Node.handle_ping(conn, buf[0:], n)
@@ -324,8 +324,10 @@ func (Node node) handle_announce_peer(conn *net.UDPConn, buf []byte, n int) stri
 func handle_infohash(buf []byte, n int) {
 	msg := string(buf[0:n])
 	str_list := strings.Split(msg, "_")
-	id64, err := strconv.Atoi(str_list[1])
-	checkError(err)
+	id64, err := strconv.ParseInt(str_list[1], 10, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
 	infoid := uint64(id64)
 	info := info_hash{
 		infohash: infoid,
@@ -476,5 +478,6 @@ func md5toinfohash(file string) uint64 {
 	b_buf := bytes.NewBuffer(b[0:8])
 	var x uint64
 	binary.Read(b_buf, binary.BigEndian, &x)
+	x = x % 0xffffff
 	return x
 }

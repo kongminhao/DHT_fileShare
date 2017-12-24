@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"network"
 	"runtime"
-	"fmt"
 )
 
 func main() {

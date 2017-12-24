@@ -37,7 +37,7 @@ func (Node node) Init_rpc_server() {
 	go func() { //每120s get一次局域网中的infohash
 		for {
 			Node.get_all_info()
-			time.Sleep(5 * time.Second)
+			time.Sleep(120 * time.Second)
 		}
 	}()
 
@@ -205,7 +205,7 @@ func (Node node) Get_peers(info_hash uint64) {
 	} else {
 		raddr = node_route_table.pre_node.ip_addr
 	}
-	if raddr.String() == broadcast_addr.String(){
+	if raddr.String() == broadcast_addr.String() {
 		raddr = Node.ip_addr
 	}
 	fmt.Println(raddr.String())

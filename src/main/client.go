@@ -3,13 +3,14 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
 	"strings"
-	"io/ioutil"
+	"time"
 )
 
-func sender(conn net.Conn, infohash string,filename string) {
+func sender(conn net.Conn, infohash string, filename string) {
 	buffer := make([]byte, 2048)
 	words := "get_peers "
 	words += infohash
@@ -19,18 +20,28 @@ func sender(conn net.Conn, infohash string,filename string) {
 	fmt.Println(string(buffer[:n]))
 	str_list := strings.Split(string(buffer[:n]), "_")
 	fmt.Println(len(str_list))
-	strList := str_list[0:len(str_list)-1]
+	strList := str_list[0 : len(str_list)-1]
 	fmt.Println(strList)
-	download(strList[0], filename)
+	rand.Seed(time.Now().UTC().UnixNano())
+	index := rand.Intn(len(strList))
+	// 随机选择一个节点下载文件
+	download(strList[index], filename)
+
 }
-func download(addr string, filename string){
+func download(addr string, filename string) {
+
 	buffer := make([]byte, 4096)
-	tcpaddr , _ := net.ResolveTCPAddr("tcp", addr)
-	conn ,_ := net.DialTCP("tcp", nil, tcpaddr)
-	conn.Read(buffer)
+	tcpaddr, _ := net.ResolveTCPAddr("tcp", addr)
+	conn, _ := net.DialTCP("tcp", nil, tcpaddr)
 	f, _ := os.Create(filename)
 	defer f.Close()
-
+	for {
+		n, err := conn.Read(buffer)
+		if err != nil {
+			break
+		}
+		f.Write(buffer[0:n])
+	}
 }
 func showinfo(conn net.Conn) {
 	buffer := make([]byte, 2048)
@@ -55,7 +66,7 @@ func upload(conn net.Conn, path string) {
 }
 
 func main() {
-	server := "223.129.64.13:2333"
+	server := "127.0.0.1:2333"
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", server)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())

@@ -33,8 +33,8 @@ type route_table struct { // 简化的DHT, 只存储前者和后者节点的信�
 }
 
 var broadcast_addr net.UDPAddr = net.UDPAddr{
-	IP:   net.IPv4(255, 255, 255, 254),
-	Port: 8765,
+	IP:   net.IPv4(255, 255, 255, 255),
+	Port: 6789,
 }
 var minnode node = node{
 	id:      0,

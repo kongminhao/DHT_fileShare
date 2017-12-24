@@ -66,4 +66,6 @@ tags
 
 src/main/netaddr
 src/main/daemon
+client/*
+release/*
 pkg/*
