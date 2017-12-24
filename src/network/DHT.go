@@ -34,13 +34,12 @@ func (Node node) Init_rpc_server() {
 
 	defer conn.Close()
 	go Node.Ping_all()
-	go func() { //每120s get一次局域网中的infohash
+	go func() { //每10s get一次局域网中的infohash
 		for {
 			Node.get_all_info()
-			time.Sleep(120 * time.Second)
+			time.Sleep(10 * time.Second)
 		}
 	}()
-
 	Node.recvUDPMsg(conn)
 }
 
@@ -146,7 +145,10 @@ func (Node node) ping() {
 	var recv [200]byte
 	go func() {
 		n, _, err := conn.ReadFromUDP(recv[0:])
-		checkError(err)
+		if err != nil {
+			fmt.Println("test recv err" + err.Error())
+			return
+		}
 		buf <- recv[0:n]
 	}()
 
@@ -154,14 +156,17 @@ func (Node node) ping() {
 		select {
 		case <-time.After(3 * time.Second):
 			// 超时处理, 重建路由表，删除超时项
-			if node_route_table.pre_node.ip_addr.String() != broadcast_addr.String() && node_route_table.after_node.ip_addr.String() != broadcast_addr.IP.String(){
+			if node_route_table.pre_node.ip_addr.String() != broadcast_addr.String() && node_route_table.after_node.ip_addr.String() != broadcast_addr.IP.String() {
 				Node.Ping_all()
 			}
 		case ch := <-buf:
 			handle_ping_resp(ch)
 			go func() {
 				n, _, err := conn.ReadFromUDP(recv[0:])
-				checkError(err)
+				if err != nil {
+					fmt.Println("test recv err" + err.Error())
+					return
+				}
 				buf <- recv[0:n]
 			}()
 		}

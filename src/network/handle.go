@@ -97,7 +97,7 @@ func (Node node) handleConnection(conn net.Conn) {
 func (Node node) doAnnouncePeer(infoHash info_hash, tcpaddr net.TCPAddr) {
 	for {
 		Node.Announce_peer(infoHash.infohash, tcpaddr, infoHash.filename)
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
 func (Node node) recvUDPMsg(conn *net.UDPConn) {
@@ -240,6 +240,9 @@ func handle_get_peer(buf []byte, n int) string {
 		ttl, err := strconv.Atoi(str_list[5])
 		checkError(err)
 		ttl -= 1
+		if ttl < 0 {
+			return "fail"
+		}
 		forward_msg := "getpeers:" + str_list[1] + ":" + str_list[2] + ":" + str_list[3] + ":" + str_list[4] + ":" + strconv.Itoa(ttl)
 		if distance(nodeid, node_route_table.pre_node.id) < distance(nodeid, node_route_table.after_node.id) {
 			// 转发给pre_node
