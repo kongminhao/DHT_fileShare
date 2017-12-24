@@ -104,7 +104,6 @@ func (Node node) Ping_all() {
 func (Node node) get_all_info() {
 	// 由需求导出的处理函数。 自动的得到局域网内的info_hash
 	// 其实只是强行使用DHT做一个路由而已
-	// 不难，明天做， 我不管那么多了，先实现需求再说。妈个鸡
 	msg := "broadcastinfo" + "_" + Node.ip_addr.String()
 	// 这里向两侧路由转发
 	conn, err := net.DialUDP("udp", nil, &Node.ip_addr)
@@ -154,8 +153,10 @@ func (Node node) ping() {
 	for i := 0; i < 1; i++ {
 		select {
 		case <-time.After(3 * time.Second):
-			// todo: 超时处理, 重建路由表，删除超时项
-			Node.Ping_all() // 执行发现节点。判断，是否是maxnode超时或者是否有一个为minnode, 因为这样肯定超时
+			// 超时处理, 重建路由表，删除超时项
+			if node_route_table.pre_node.ip_addr.String() != broadcast_addr.String() && node_route_table.after_node.ip_addr.String() != broadcast_addr.IP.String(){
+				Node.Ping_all()
+			}
 		case ch := <-buf:
 			handle_ping_resp(ch)
 			go func() {
