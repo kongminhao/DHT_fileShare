@@ -2,12 +2,16 @@ package network
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
+	"path"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (Node node) recvtcp_msg(Listenconn net.Listener) {
@@ -48,7 +52,7 @@ func (Node node) handleConnection(conn net.Conn) {
 			}
 			data := ""
 			for _, peer := range temp_peer_list.peer_lists {
-				if peer.ip.Port == 0{
+				if peer.ip.Port == 0 {
 					continue
 				}
 				data += peer.ip.String() + "_"
@@ -75,14 +79,27 @@ func (Node node) handleConnection(conn net.Conn) {
 		if bytes.HasPrefix(buffer[:n], []byte("openTcp")) { // openTcp filepath
 			msg := string(buffer[:n])
 			filepath := strings.Split(msg, " ")[1]
-			string := openTcpPort(filepath)
-			fmt.Println(string)
-			// todo Announce peers
+			tcpstring := openTcpPort(filepath)
+			tcpaddr, err := net.ResolveTCPAddr("tcp", tcpstring)
+			checkError(err)
+			fmt.Println(tcpaddr)
+			filename := path.Base(filepath)
+			infohash := md5toinfohash(filepath)
+			infoHash := info_hash{
+				infohash: infohash,
+				filename: filename,
+			}
+			go Node.doAnnouncePeer(infoHash, *tcpaddr)
 		}
 	}
 
 }
-
+func (Node node) doAnnouncePeer(infoHash info_hash, tcpaddr net.TCPAddr) {
+	for {
+		Node.Announce_peer(infoHash.infohash, tcpaddr, infoHash.filename)
+		time.Sleep(5 * time.Second)
+	}
+}
 func (Node node) recvUDPMsg(conn *net.UDPConn) {
 
 	// 以协程方式启动两个更新程序
@@ -111,7 +128,7 @@ func (Node node) recvUDPMsg(conn *net.UDPConn) {
 		} else if bytes.HasPrefix(buf[0:], []byte("broadcastinfo")) {
 			_, err := handle_broadcastinfo(conn, buf[0:], n, raddr)
 			if err != nil {
-				//go Node.Ping_all() // 以协程方式启动，防止阻塞
+				go Node.Ping_all() // 以协程方式启动，防止阻塞
 				fmt.Println(err)
 			}
 		} else if bytes.HasPrefix(buf[0:], []byte("infohash")) {
@@ -185,7 +202,7 @@ func handlepeer(buf []byte, n int) {
 }
 
 func handle_get_peer(buf []byte, n int) string {
-	// todo: 处理get peers 请求
+	// 处理get peers 请求
 	// 判断是否在自己的peer_list中， 如在，返回对应的peer_list
 	// 否则，向下级路由转发， 同时，将路由的跳数-1
 	// msg := "getpeers:" + string(info_hash) + ":" + string(Node.id) + ":" + string(Node.ip_addr.IP) + ":" + string(Node.ip_addr.Port) + ":" + string(255)
@@ -243,7 +260,7 @@ func handle_get_peer(buf []byte, n int) string {
 }
 
 func (Node node) handle_announce_peer(conn *net.UDPConn, buf []byte, n int) string {
-	// todo: 处理announce peer请求， 向下级路由转发也要做，妈个鸡，好烦啊, 判断是否有节点比自己离info_hash近，没有的话， 再加入节点。
+	// 处理announce_peer请求，完成！
 	msg := string((buf[0:n]))
 	var str_list []string = strings.Split(msg, ":")
 	// msg := "announcepeer:" + string(info_hash) + ":" + string(Node.id) + ":" + string(tcpaddr.IP) + ":" + string(tcpaddr.Port)
@@ -264,22 +281,29 @@ func (Node node) handle_announce_peer(conn *net.UDPConn, buf []byte, n int) stri
 
 	nodeid := uint16(infohash % 0xffff) // 计算映射节点
 
-	if distance(nodeid, Node.id) > distance(nodeid, node_route_table.pre_node.id) && node_route_table.pre_node.ip_addr.String() != broadcast_addr.String(){
-		forwardconn, err := net.DialUDP("udp", nil,&node_route_table.pre_node.ip_addr)
+	if distance(nodeid, Node.id) > distance(nodeid, node_route_table.pre_node.id) && node_route_table.pre_node.ip_addr.String() != broadcast_addr.String() {
+		forwardconn, err := net.DialUDP("udp", nil, &node_route_table.pre_node.ip_addr)
 		checkError(err)
 		forwardconn.Write([]byte(msg))
-	}else if distance(nodeid, Node.id) > distance(nodeid,node_route_table.after_node.id) && node_route_table.after_node.ip_addr.String() != broadcast_addr.String() {
-		forwardconn, err := net.DialUDP("udp", nil,&node_route_table.after_node.ip_addr)
+	} else if distance(nodeid, Node.id) > distance(nodeid, node_route_table.after_node.id) && node_route_table.after_node.ip_addr.String() != broadcast_addr.String() {
+		forwardconn, err := net.DialUDP("udp", nil, &node_route_table.after_node.ip_addr)
 		checkError(err)
 		forwardconn.Write([]byte(msg))
-	}else {
+	} else {
 		// 如果该peer有对应的info_hash, 则将其加入peer_list
 		flag := 0
 		for _, peerlist := range peer_lists {
 			if peerlist.info.infohash == info.infohash {
+				flag = 1
 				if len(peerlist.peer_lists) < 5 { // 确保peer_list大小小于5
-					flag = 1
-					peerlist.peer_lists = append(peerlist.peer_lists, PEER) // append 采用副作用编程
+					for _, Peer := range peerlist.peer_lists {
+						if Peer.ip.String() == PEER.ip.String() {
+							flag = 2
+						}
+					}
+					if flag == 1 {
+						peerlist.peer_lists = append(peerlist.peer_lists, PEER) // append 采用副作用编程
+					}
 				}
 			}
 		}
@@ -293,7 +317,6 @@ func (Node node) handle_announce_peer(conn *net.UDPConn, buf []byte, n int) stri
 			}
 			peer_lists = append(peer_lists, newpeerlist)
 		}
-		// todo: 返回值，啦啦啦
 		msg = "success"
 	}
 	return msg
@@ -331,9 +354,12 @@ func handle_broadcastinfo(conn *net.UDPConn, buf []byte, n int, faddr *net.UDPAd
 		}
 		rconn.Write([]byte(return_msg))
 	}
-	fmt.Println(faddr.String())
-	fmt.Println(node_route_table.pre_node.ip_addr.String())
-	fmt.Println(node_route_table.after_node.ip_addr.String())
+	//fmt.Println(faddr.String())
+	//fmt.Println(node_route_table.pre_node.ip_addr.String())
+	//fmt.Println(node_route_table.after_node.ip_addr.String())
+	if faddr.IP.String() == get_localip().String() {
+		return "ok", nil
+	}
 	if faddr.IP.String() == node_route_table.pre_node.ip_addr.IP.String() {
 		fconn, err := net.DialUDP("udp", nil, &node_route_table.after_node.ip_addr)
 		checkError(err)
@@ -343,7 +369,7 @@ func handle_broadcastinfo(conn *net.UDPConn, buf []byte, n int, faddr *net.UDPAd
 		checkError(err)
 		fconn.Write(buf[0:n])
 	} else {
-		//todo: 出错了,emmmmm, 重新ping全局路由
+		//出错了,emmmmm, 重新ping全局路由
 		return_msg := "fail"
 		error := errors.New("fail_to_forwardmsg")
 		return return_msg, error
@@ -392,7 +418,7 @@ func (N node) update_route_table() {
 func handle_ping_resp(buf []byte) {
 	// complete
 	msg := string(buf)
-	fmt.Println(msg)
+	//fmt.Println(msg)
 	var str_list []string = strings.Split(msg, ":")
 	// 构建出node
 	id64, err := strconv.Atoi(str_list[1])
@@ -409,7 +435,6 @@ func handle_ping_resp(buf []byte) {
 }
 
 func openTcpPort(path string) string {
-
 	laddr := net.TCPAddr{
 		IP:   get_localip(),
 		Port: 0, // to random port
@@ -418,13 +443,14 @@ func openTcpPort(path string) string {
 	if err != nil {
 		panic(err)
 	}
-	defer Listen_conn.Close()
+	//defer Listen_conn.Close()
 	// open file to transport
 	go openFileDownload(*Listen_conn, path)
 	return Listen_conn.Addr().String()
 }
 func openFileDownload(listener net.TCPListener, path string) {
 	for {
+		//fmt.Println("test donwload")
 		conn, err := listener.AcceptTCP()
 		if err != nil {
 			continue
@@ -440,4 +466,15 @@ func openFileDownload(listener net.TCPListener, path string) {
 			conn.Close()
 		}()
 	}
+}
+func md5toinfohash(file string) uint64 {
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return 0
+	}
+	b := md5.Sum(data)
+	b_buf := bytes.NewBuffer(b[0:8])
+	var x uint64
+	binary.Read(b_buf, binary.BigEndian, &x)
+	return x
 }

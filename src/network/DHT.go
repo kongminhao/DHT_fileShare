@@ -57,7 +57,7 @@ func (Node node) Ping_all() {
 	ip := Node.ip_addr.IP
 	laddr := net.UDPAddr{
 		IP:   ip,
-		Port: 31999,
+		Port: 0,
 	}
 	// 这里设置接收者的IP地址为广播地址
 	raddr := net.UDPAddr{
@@ -85,14 +85,14 @@ func (Node node) Ping_all() {
 		select {
 		case <-time.After(3 * time.Second):
 			// ok
-			fmt.Println("test time-out")
+			//fmt.Println("test time-out")
 			return
 		case ch := <-buf:
 			handle_ping_resp(ch)
 			go func() {
 				n, _, err := conn.ReadFromUDP(recv[0:])
 				if err != nil {
-					fmt.Println("2test recv error" + err.Error())
+					//fmt.Println("2test recv error" + err.Error())
 					return
 				}
 				buf <- recv[0:n]
@@ -107,6 +107,9 @@ func (Node node) get_all_info() {
 	// 不难，明天做， 我不管那么多了，先实现需求再说。妈个鸡
 	msg := "broadcastinfo" + "_" + Node.ip_addr.String()
 	// 这里向两侧路由转发
+	conn, err := net.DialUDP("udp", nil, &Node.ip_addr)
+	checkError(err)
+	conn.Write([]byte(msg))
 	conn_pre, err := net.DialUDP("udp", nil, &node_route_table.pre_node.ip_addr)
 	checkError(err)
 	conn_pre.Write([]byte(msg))
@@ -121,7 +124,7 @@ func (Node node) ping() {
 	ip := Node.ip_addr.IP
 	laddr := net.UDPAddr{
 		IP:   ip,
-		Port: 32200,
+		Port: 0,
 	}
 
 	pre_addr := net.UDPAddr{
@@ -202,6 +205,9 @@ func (Node node) Get_peers(info_hash uint64) {
 	} else {
 		raddr = node_route_table.pre_node.ip_addr
 	}
+	if raddr.String() == broadcast_addr.String(){
+		raddr = Node.ip_addr
+	}
 	fmt.Println(raddr.String())
 	conn, err := net.ListenUDP("udp", &laddr)
 	defer conn.Close()
@@ -210,23 +216,23 @@ func (Node node) Get_peers(info_hash uint64) {
 	_, err = conn.WriteToUDP([]byte(msg), &raddr)
 	checkError(err)
 }
-func (Node node) Announce_peer(info_hash uint64, tcpaddr net.TCPAddr ,filename string) {
+func (Node node) Announce_peer(info_hash uint64, tcpaddr net.TCPAddr, filename string) {
 	// 完成
 	msg := "announcepeer:" + strconv.Itoa(int(info_hash)) + ":" + strconv.Itoa(int(Node.id)) + ":" + tcpaddr.IP.String() + ":" + strconv.Itoa(tcpaddr.Port) + ":" + filename
 	nodeid := uint16(info_hash % 0xffff)
-	if distance(nodeid, Node.id) > distance(nodeid, node_route_table.pre_node.id) && node_route_table.pre_node.ip_addr.String() != broadcast_addr.String(){
-		conn, err := net.DialUDP("udp",nil, &node_route_table.pre_node.ip_addr)
+	if distance(nodeid, Node.id) > distance(nodeid, node_route_table.pre_node.id) && node_route_table.pre_node.ip_addr.String() != broadcast_addr.String() {
+		conn, err := net.DialUDP("udp", nil, &node_route_table.pre_node.ip_addr)
 		checkError(err)
 		defer conn.Close()
 		_, err = conn.Write([]byte(msg))
 		checkError(err)
-	}else if distance(nodeid, Node.id) > distance(nodeid, node_route_table.after_node.id) && node_route_table.after_node.ip_addr.String() != broadcast_addr.String(){
-		conn, err := net.DialUDP("udp",nil, &node_route_table.after_node.ip_addr)
+	} else if distance(nodeid, Node.id) > distance(nodeid, node_route_table.after_node.id) && node_route_table.after_node.ip_addr.String() != broadcast_addr.String() {
+		conn, err := net.DialUDP("udp", nil, &node_route_table.after_node.ip_addr)
 		checkError(err)
 		defer conn.Close()
 		_, err = conn.Write([]byte(msg))
 		checkError(err)
-	}else {
+	} else {
 		conn, err := net.DialUDP("udp", nil, &Node.ip_addr)
 		defer conn.Close()
 		checkError(err)

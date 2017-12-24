@@ -6,10 +6,10 @@ import (
 	"net"
 	"os"
 	"strings"
-
+	"io/ioutil"
 )
 
-func sender(conn net.Conn, infohash string) {
+func sender(conn net.Conn, infohash string,filename string) {
 	buffer := make([]byte, 2048)
 	words := "get_peers "
 	words += infohash
@@ -18,7 +18,19 @@ func sender(conn net.Conn, infohash string) {
 	n, _ := conn.Read(buffer)
 	fmt.Println(string(buffer[:n]))
 	str_list := strings.Split(string(buffer[:n]), "_")
-	fmt.Println(str_list)
+	fmt.Println(len(str_list))
+	strList := str_list[0:len(str_list)-1]
+	fmt.Println(strList)
+	download(strList[0], filename)
+}
+func download(addr string, filename string){
+	buffer := make([]byte, 4096)
+	tcpaddr , _ := net.ResolveTCPAddr("tcp", addr)
+	conn ,_ := net.DialTCP("tcp", nil, tcpaddr)
+	conn.Read(buffer)
+	f, _ := os.Create(filename)
+	defer f.Close()
+
 }
 func showinfo(conn net.Conn) {
 	buffer := make([]byte, 2048)
@@ -79,8 +91,10 @@ func main() {
 			showinfo(conn)
 		} else if strings.HasPrefix(choice, "/download") {
 			fmt.Println(choice)
-			infohash := strings.Split(choice, " ")[1]
-			sender(conn, infohash)
+			list := strings.Split(choice, " ")
+			infohash := list[1]
+			filename := list[2]
+			sender(conn, infohash, filename)
 		} else if strings.HasPrefix(choice, "/upload") {
 			path := strings.Split(choice, " ")[1]
 			upload(conn, path)
