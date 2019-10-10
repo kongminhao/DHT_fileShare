@@ -72,7 +72,7 @@
 
 首先打开daemon进程,
 
-![](http://ofqm89vhw.bkt.clouddn.com/396ddecd017a020e9ae0d0a9ba6d5e78.png)
+![](http://caiji.scuseek.com/396ddecd017a020e9ae0d0a9ba6d5e78.png)
 
 可以看到这两个文件的位数是不同的. 
 
@@ -80,13 +80,13 @@
 
 我们在32位的linux上执行 client ， 并且上传一个文件
 
-![](http://ofqm89vhw.bkt.clouddn.com/7e46ddceecedf7fbe58cd9710371ac11.png)
+![](http://caiji.scuseek.com/7e46ddceecedf7fbe58cd9710371ac11.png)
 
-![](http://ofqm89vhw.bkt.clouddn.com/ab486dd4d786c1c27d7d5503fb8192dc.png)
+![](http://caiji.scuseek.com/ab486dd4d786c1c27d7d5503fb8192dc.png)
 
 然后我们获取了这个dht网络中拥有的infohash值和文件， 然后我们选择下载image.tar.gz 
 
-![](http://ofqm89vhw.bkt.clouddn.com/804d078898bb25b0d728bd95a638fcb6.png)
+![](http://caiji.scuseek.com/804d078898bb25b0d728bd95a638fcb6.png)
 
 ok, download成功。
 
